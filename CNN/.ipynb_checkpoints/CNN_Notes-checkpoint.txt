@@ -1,0 +1,284 @@
+Convolutional Neural Networks (CNN)
+A Convolutional Neural Network (CNN) is a deep learning architecture designed primarily for processing grid-like data such as images. Unlike traditional neural networks that flatten an image into a long vector, CNNs preserve the spatial structure of images and learn patterns directly from the pixel arrangement.
+
+An image is represented as a tensor with shape:
+
+Batch × Channels × Height × Width
+
+For example, in the FashionMNIST dataset:
+
+32 × 1 × 28 × 28
+
+This means:
+
+32 images in one batch
+
+1 channel (grayscale)
+
+height = 28 pixels
+
+width = 28 pixels
+
+The CNN processes this image through a sequence of layers that gradually transform raw pixels into high-level features used for classification.
+
+1. Convolution Layer
+
+The Convolution layer (Conv2d) is the core building block of CNNs.
+
+It applies small filters called kernels over the image. A kernel is a small matrix such as:
+
+3 × 3
+
+Example kernel:
+
+1  0 -1
+1  0 -1
+1  0 -1
+
+This kernel slides across the image and performs element-wise multiplication with the corresponding pixels. The results are summed to produce a single number.
+
+Mathematically:
+
+output = Σ(pixel × weight) + bias
+
+Each position where the kernel is applied produces one output value. As the kernel slides across the image, it creates a feature map.
+
+Feature maps represent how strongly a pattern appears in different parts of the image.
+
+2. Kernel Size
+
+The kernel size determines the dimensions of the filter.
+
+Example:
+
+kernel_size = 3
+
+means:
+
+3 × 3 filter
+
+In PyTorch:
+
+nn.Conv2d(in_channels=1, out_channels=10, kernel_size=3)
+
+Here the model learns 10 different 3×3 filters.
+
+Each filter detects different patterns like:
+
+edges
+
+corners
+
+textures
+
+curves
+
+3. Channels and Feature Maps
+
+in_channels refers to the number of input feature maps.
+
+Example:
+
+First convolution layer:
+
+input = grayscale image
+channels = 1
+
+So:
+
+in_channels = 1
+
+If the layer outputs 10 filters:
+
+out_channels = 10
+
+The output becomes:
+
+10 feature maps
+
+Shape becomes:
+
+Batch × 10 × Height × Width
+
+These feature maps are the input for the next convolution layer.
+
+So the next convolution must use:
+
+in_channels = 10
+
+because it receives 10 feature maps.
+
+4. Stride
+
+Stride determines how far the kernel moves each step.
+
+Example:
+
+stride = 1
+
+The kernel moves one pixel at a time.
+
+stride = 2
+
+The kernel jumps two pixels.
+
+Larger stride reduces the size of the feature map.
+
+Example:
+
+28×28 → stride 2 → 14×14
+5. Padding
+
+Padding adds extra pixels (usually zeros) around the image border.
+
+Example with padding = 1:
+
+Original image:
+
+3×3
+
+After padding:
+
+5×5
+
+Padding is applied once before convolution starts, not every time the filter moves.
+
+Padding helps:
+
+preserve spatial size
+
+prevent information loss near edges
+
+Example:
+
+kernel = 3
+padding = 1
+stride = 1
+
+Output size remains the same.
+
+6. Activation Function (ReLU)
+
+After convolution, we apply ReLU:
+
+ReLU(x) = max(0, x)
+
+ReLU introduces non-linearity, allowing the network to learn complex patterns instead of simple linear transformations.
+
+7. Pooling Layer
+
+Pooling reduces the spatial size of feature maps.
+
+The most common is Max Pooling.
+
+Example:
+
+2×2 region
+
+3 4
+5 8
+
+MaxPool keeps:
+
+8
+
+Pooling helps:
+
+reduce computation
+
+retain strongest features
+
+provide translation invariance
+
+Example transformation:
+
+28×28 → MaxPool(2) → 14×14
+
+Pooling keeps the strongest signal in each region instead of tracking exact positions.
+
+8. Convolution Blocks
+
+CNNs often group layers into blocks:
+
+Conv → ReLU → Conv → ReLU → Pool
+
+Example block:
+
+self.conv1 = nn.Sequential(
+    nn.Conv2d(...),
+    nn.ReLU(),
+    nn.Conv2d(...),
+    nn.ReLU(),
+    nn.MaxPool2d(2)
+)
+
+This block:
+
+detects patterns
+
+refines patterns
+
+compresses feature maps
+
+9. Data Flow Through CNN
+
+CNNs process images hierarchically.
+
+Input image
+↓
+Conv layer (detect edges)
+↓
+Conv layer (detect shapes)
+↓
+Pooling (compress)
+↓
+Conv layers (detect object parts)
+↓
+Flatten
+↓
+Fully connected layer
+↓
+Class prediction
+
+As layers deepen:
+
+pixels → edges → curves → shapes → object parts → objects
+
+Spatial resolution decreases while feature complexity increases.
+
+10. Key Rule for Channels
+
+Always remember:
+
+in_channels = number of feature maps from previous layer
+out_channels = number of filters this layer learns
+
+Each new convolution layer learns new features based on previous ones.
+
+Final CNN Pipeline Example
+Input image
+1 × 28 × 28
+↓
+Conv2d (10 filters)
+↓
+10 × 28 × 28
+↓
+ReLU
+↓
+Conv2d
+↓
+10 × 28 × 28
+↓
+MaxPool
+↓
+10 × 14 × 14
+↓
+Conv block 2
+↓
+Feature maps
+↓
+Flatten
+↓
+Linear layer
+↓
+Prediction
